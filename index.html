@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, safe-area-inset-top">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="健身计划">
+    <meta name="theme-color" content="#4a9eff">
+    <link rel="manifest" href="manifest.json">
+    <title>健身计划</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-left: max(20px, env(safe-area-inset-left));
+                padding-right: max(20px, env(safe-area-inset-right));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #000;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+
+        .month-display {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .total-days {
+            color: #4a9eff;
+            font-weight: 600;
+        }
+
+        .total-days strong {
+            font-size: 24px;
+        }
+
+        .view-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            gap: 8px;
+        }
+
+        .calendar-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            text-align: center;
+        }
+
+        .nav-btn {
+            background: #f0f0f0;
+            border: none;
+            font-size: 20px;
+            color: #4a9eff;
+            cursor: pointer;
+            padding: 8px 12px;
+            transition: all 0.2s;
+            border-radius: 8px;
+            flex-shrink: 0;
+        }
+
+        .nav-btn:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+
+        .report-controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .report-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: none;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a9eff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .report-btn:hover {
+            background: rgba(74, 158, 255, 0.1);
+        }
+
+        .report-icon {
+            flex-shrink: 0;
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .weekday {
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: #999;
+            padding: 8px 0;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .day {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 6px;
+            font-size: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f5f5f5;
+            position: relative;
+            color: #333;
+            overflow: hidden;
+            min-height: 60px;
+        }
+
+        .day:hover {
+            transform: scale(1.05);
+            background: #e0e0e0;
+        }
+
+        .day.today {
+            border: 2px solid #4a9eff;
+        }
+
+        .day .date-number {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .day .workout-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            padding: 0 2px;
+        }
+
+        .day .workout-types {
+            background: #333;
+            color: white;
+            font-size: 8px;
+            padding: 1px 3px;
+            border-radius: 2px;
+            width: 100%;
+            text-align: center;
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .day .workout-duration {
+            font-size: 8px;
+            font-weight: 600;
+            text-align: center;
+            width: 100%;
+            padding: 1px 3px;
+            background: #00ffff;
+            color: #000;
+            border-radius: 2px;
+        }
+
+        .day.empty {
+            background: none;
+            cursor: default;
+        }
+
+        .day.empty:hover {
+            transform: none;
+            background: none;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            font-size: 20px;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 32px;
+            color: #999;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .workout-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .workout-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .workout-item:hover {
+            background: #e0e0e0;
+        }
+
+        .workout-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .workout-item span {
+            font-size: 15px;
+            color: #333;
+            cursor: pointer;
+        }
+
+        .workout-item span.workout-name:hover {
+            color: #4a9eff;
+        }
+
+        .workout-item span.workout-name[contenteditable="true"] {
+            outline: none;
+            border-bottom: 2px solid #4a9eff;
+            padding: 0 2px;
+        }
+
+        .outdoor-note {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 15px;
+            background: white;
+        }
+
+        .outdoor-note::placeholder {
+            color: #999;
+        }
+
+        .outdoor-note:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .duration-inputs {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+            max-width: 200px;
+        }
+
+        .duration-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .duration-input::placeholder {
+            color: #999;
+        }
+
+        .duration-input:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .duration-separator {
+            font-size: 18px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .modal-actions {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #4a9eff 0%, #3d7dd4 100%);
+        }
+
+        .btn-cancel {
+            background: #e74c3c;
+        }
+
+        .report-summary {
+            background: linear-gradient(135deg, #4a9eff 0%, #3d7dd4 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .report-summary h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .report-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .report-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            margin-bottom: 15px;
+        }
+
+        .report-select:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .report-type-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .report-type-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .report-type-item:hover {
+            background: #e0e0e0;
+        }
+
+        .report-type-item input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .report-type-item span {
+            font-size: 15px;
+            color: #333;
+        }
+
+        @media (max-width: 380px) {
+            .calendar {
+                gap: 3px;
+            }
+
+            .day {
+                font-size: 14px;
+                border-radius: 8px;
+            }
+
+            .weekday {
+                font-size: 12px;
+                padding: 6px 0;
+            }
+
+            .workout-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>健身计划</h1>
+            <div class="stats">
+                <span class="month-display" id="currentMonth"></span>
+                <span class="total-days">本月锻炼：<strong id="totalWorkoutDays">0</strong>天</span>
+            </div>
+        </header>
+
+        <main>
+            <div class="view-controls">
+                <button class="nav-btn" id="prevYear">‹‹</button>
+                <button class="nav-btn" id="prevMonth">‹</button>
+                <span class="calendar-title" id="calendarTitle"></span>
+                <button class="nav-btn" id="nextMonth">›</button>
+                <button class="nav-btn" id="nextYear">››</button>
+            </div>
+
+            <div class="report-controls">
+                <button class="report-btn" id="reportBtn">
+                    月/年报
+                    <svg class="report-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="weekdays">
+                <div class="weekday">日</div>
+                <div class="weekday">一</div>
+                <div class="weekday">二</div>
+                <div class="weekday">三</div>
+                <div class="weekday">四</div>
+                <div class="weekday">五</div>
+                <div class="weekday">六</div>
+            </div>
+
+            <div class="calendar" id="calendar"></div>
+        </main>
+
+        <div class="modal" id="workoutModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalDate"></h2>
+                    <button class="close-btn" id="closeWorkoutModal">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="section-title">选择运动项目：</p>
+                    <div class="workout-items">
+                        <label class="workout-item">
+                            <input type="checkbox" value="胸">
+                            <span class="workout-name" data-original="胸">胸</span>
+                        </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="肩">
+                            <span class="workout-name" data-original="肩">肩</span>
+                        </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="臀腿">
+                            <span class="workout-name" data-original="臀腿">臀腿</span>
+                        </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="背">
+                            <span class="workout-name" data-original="背">背</span>
+                        </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="户外">
+                            <span class="workout-name" data-original="户外">户外</span>
+                        </label>
+                    </div>
+                    <input type="text" class="outdoor-note" id="outdoorNote" placeholder="户外项目备注（如：跑步、骑行）">
+
+                    <p class="section-title">运动时长（小时:分钟）：</p>
+                    <div class="duration-inputs">
+                        <input type="number" class="duration-input" id="hoursInput" placeholder="0" min="0">
+                        <span class="duration-separator">:</span>
+                        <input type="number" class="duration-input" id="minutesInput" placeholder="00" min="0" max="59">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-save" id="btnSaveWorkout">保存</button>
+                    <button class="btn btn-cancel" id="btnDeleteWorkout">删除记录</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="reportSelectModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>选择报表类型</h2>
+                    <button class="close-btn" id="closeReportSelect">×</button>
+                </div>
+                <div class="modal-body">
+                    <p class="section-title">选择年份：</p>
+                    <select class="report-select" id="reportYearSelect"></select>
+
+                    <p class="section-title">选择月份：</p>
+                    <div class="report-type-select">
+                        <label class="report-type-item">
+                            <input type="radio" name="reportType" value="month" checked>
+                            <span>月报</span>
+                        </label>
+                        <label class="report-type-item">
+                            <input type="radio" name="reportType" value="year">
+                            <span>年报</span>
+                        </label>
+                    </div>
+
+                    <p class="section-title" id="monthSelectLabel">选择月份：</p>
+                    <select class="report-select" id="reportMonthSelect"></select>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-save" id="btnShowReport">查看报表</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal" id="reportModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="reportTitle"></h2>
+                    <button class="close-btn" id="closeReport">×</button>
+                </div>
+                <div class="modal-body" id="reportContent"></div>
+                <div class="modal-actions">
+                    <button class="btn btn-save" id="btnSaveReport">保存到相册</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker 注册成功:', registration.scope);
+
+                        // 监听更新
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // 有新版本可用
+                                    console.log('新版本 Service Worker 已安装，刷新页面以应用');
+                                    if (confirm('发现新版本，是否立即更新？')) {
+                                        window.location.reload();
+                                    }
+                                }
+                            });
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Service Worker 注册失败:', error);
+                    });
+            });
+        }
+
+        // 监听 PWA 安装提示
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // 阻止默认的安装提示
+            e.preventDefault();
+            // 保存事件以在合适的时机触发
+            deferredPrompt = e;
+
+            // 可以显示一个自定义的安装按钮
+            console.log('可以安装 PWA 了');
+        });
+
+        let workoutData = {};
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        let selectedDate = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderCalendar();
+            setupEventListeners();
+            setupWorkoutNameEditing();
+        });
+
+        function setupWorkoutNameEditing() {
+            document.querySelectorAll('.workout-name').forEach(nameSpan => {
+                nameSpan.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    nameSpan.contentEditable = 'true';
+                    nameSpan.focus();
+
+                    const range = document.createRange();
+                    range.selectNodeContents(nameSpan);
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+
+                    nameSpan.addEventListener('blur', () => {
+                        nameSpan.contentEditable = 'false';
+                        const newName = nameSpan.textContent.trim();
+                        const checkbox = nameSpan.parentElement.querySelector('input[type="checkbox"]');
+                        if (newName && checkbox) {
+                            checkbox.value = newName;
+                        }
+                    }, { once: true });
+
+                    nameSpan.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            nameSpan.blur();
+                        }
+                    });
+                });
+            });
+        }
+
+        function loadData() {
+            const storedWorkoutData = localStorage.getItem('workoutData');
+            if (storedWorkoutData) {
+                workoutData = JSON.parse(storedWorkoutData);
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('workoutData', JSON.stringify(workoutData));
+        }
+
+        function setupEventListeners() {
+            document.getElementById('prevYear').addEventListener('click', () => {
+                currentYear--;
+                renderCalendar();
+            });
+
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCalendar();
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCalendar();
+            });
+
+            document.getElementById('nextYear').addEventListener('click', () => {
+                currentYear++;
+                renderCalendar();
+            });
+
+            document.getElementById('reportBtn').addEventListener('click', openReportSelectModal);
+            document.getElementById('closeWorkoutModal').addEventListener('click', closeWorkoutModal);
+            document.getElementById('btnSaveWorkout').addEventListener('click', saveWorkout);
+            document.getElementById('btnDeleteWorkout').addEventListener('click', deleteWorkout);
+            document.getElementById('closeReportSelect').addEventListener('click', closeReportSelectModal);
+            document.getElementById('btnShowReport').addEventListener('click', showReport);
+            document.querySelectorAll('input[name="reportType"]').forEach(radio => {
+                radio.addEventListener('change', toggleMonthSelect);
+            });
+            document.getElementById('closeReport').addEventListener('click', closeReportModal);
+            document.getElementById('btnSaveReport').addEventListener('click', saveReportToAlbum);
+
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            document.getElementById('currentMonth').textContent = `${currentYear}.${currentMonth + 1}`;
+            document.getElementById('calendarTitle').textContent = `${currentYear}.${currentMonth + 1}`;
+
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+            let completedDays = 0;
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateKey = formatDateKey(currentYear, currentMonth, day);
+                if (workoutData[dateKey]) {
+                    completedDays++;
+                }
+            }
+
+            document.getElementById('totalWorkoutDays').textContent = `${completedDays}`;
+
+            calendar.innerHTML = '';
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'day empty';
+                calendar.appendChild(emptyDay);
+            }
+
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day';
+                const dateKey = formatDateKey(currentYear, currentMonth, day);
+
+                if (today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day) {
+                    dayElement.classList.add('today');
+                }
+
+                const dateNumber = document.createElement('div');
+                dateNumber.className = 'date-number';
+                dateNumber.textContent = day;
+                dayElement.appendChild(dateNumber);
+
+                const workoutInfo = document.createElement('div');
+                workoutInfo.className = 'workout-info';
+
+                if (workoutData[dateKey]) {
+                    const data = workoutData[dateKey];
+                    const workoutTypes = document.createElement('div');
+                    workoutTypes.className = 'workout-types';
+                    const typeNames = data.types || [];
+                    if (data.outdoorNote) {
+                        const outdoorIndex = typeNames.indexOf('户外');
+                        if (outdoorIndex > -1) {
+                            typeNames[outdoorIndex] = data.outdoorNote;
+                        }
+                    }
+                    workoutTypes.textContent = typeNames.join('.');
+                    workoutInfo.appendChild(workoutTypes);
+
+                    if (data.duration) {
+                        const durationEl = document.createElement('div');
+                        durationEl.className = 'workout-duration';
+                        const hours = Math.floor(data.duration / 60);
+                        const minutes = data.duration % 60;
+                        durationEl.textContent = `${hours}:${String(minutes).padStart(2, '0')}`;
+                        workoutInfo.appendChild(durationEl);
+                    }
+                }
+
+                dayElement.appendChild(workoutInfo);
+                dayElement.addEventListener('click', () => openWorkoutModal(currentYear, currentMonth, day));
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        function formatDateKey(year, month, day) {
+            return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        function openWorkoutModal(year, month, day) {
+            selectedDate = formatDateKey(year, month, day);
+            document.getElementById('modalDate').textContent = `${year}年${month + 1}月${day}日`;
+
+            document.querySelectorAll('.workout-item input').forEach(input => {
+                input.checked = false;
+            });
+            document.getElementById('outdoorNote').value = '';
+            document.getElementById('hoursInput').value = '';
+            document.getElementById('minutesInput').value = '';
+
+            if (workoutData[selectedDate]) {
+                const data = workoutData[selectedDate];
+                if (data.types && data.types.length > 0) {
+                    data.types.forEach(type => {
+                        const checkbox = document.querySelector(`.workout-item input[value="${type}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                }
+                if (data.outdoorNote) {
+                    document.getElementById('outdoorNote').value = data.outdoorNote;
+                }
+                if (data.duration) {
+                    const hours = Math.floor(data.duration / 60);
+                    const minutes = data.duration % 60;
+                    if (hours > 0) {
+                        document.getElementById('hoursInput').value = hours;
+                    }
+                    if (minutes > 0) {
+                        document.getElementById('minutesInput').value = minutes;
+                    }
+                }
+            }
+
+            document.getElementById('workoutModal').classList.add('active');
+        }
+
+        function closeWorkoutModal() {
+            document.getElementById('workoutModal').classList.remove('active');
+            selectedDate = null;
+        }
+
+        function saveWorkout() {
+            const selectedTypes = [];
+            document.querySelectorAll('.workout-item input:checked').forEach(input => {
+                selectedTypes.push(input.value);
+            });
+
+            if (selectedTypes.length === 0) {
+                alert('请至少选择一个运动项目');
+                return;
+            }
+
+            const hours = parseInt(document.getElementById('hoursInput').value) || 0;
+            const minutes = parseInt(document.getElementById('minutesInput').value) || 0;
+            const duration = hours * 60 + minutes;
+
+            if (duration <= 0) {
+                alert('请输入有效的运动时长');
+                return;
+            }
+
+            workoutData[selectedDate] = {
+                types: selectedTypes,
+                outdoorNote: document.getElementById('outdoorNote').value.trim(),
+                duration: duration
+            };
+
+            saveData();
+            renderCalendar();
+            closeWorkoutModal();
+        }
+
+        function deleteWorkout() {
+            if (selectedDate && workoutData[selectedDate]) {
+                if (confirm('确定要删除这条记录吗？')) {
+                    delete workoutData[selectedDate];
+                    saveData();
+                    renderCalendar();
+                    closeWorkoutModal();
+                }
+            }
+        }
+
+        function openReportSelectModal() {
+            const yearSelect = document.getElementById('reportYearSelect');
+            const monthSelect = document.getElementById('reportMonthSelect');
+
+            yearSelect.innerHTML = '';
+            for (let y = currentYear - 5; y <= currentYear + 5; y++) {
+                const option = document.createElement('option');
+                option.value = y;
+                option.textContent = `${y}年`;
+                if (y === currentYear) {
+                    option.selected = true;
+                }
+                yearSelect.appendChild(option);
+            }
+
+            monthSelect.innerHTML = '';
+            for (let m = 0; m < 12; m++) {
+                const option = document.createElement('option');
+                option.value = m;
+                option.textContent = `${m + 1}月`;
+                if (m === currentMonth) {
+                    option.selected = true;
+                }
+                monthSelect.appendChild(option);
+            }
+
+            document.getElementById('reportSelectModal').classList.add('active');
+        }
+
+        function closeReportSelectModal() {
+            document.getElementById('reportSelectModal').classList.remove('active');
+        }
+
+        function toggleMonthSelect() {
+            const reportType = document.querySelector('input[name="reportType"]:checked').value;
+            const monthSelect = document.getElementById('reportMonthSelect');
+            const monthSelectLabel = document.getElementById('monthSelectLabel');
+
+            if (reportType === 'year') {
+                monthSelect.disabled = true;
+                monthSelect.style.display = 'none';
+                monthSelectLabel.style.display = 'none';
+            } else {
+                monthSelect.disabled = false;
+                monthSelect.style.display = 'block';
+                monthSelectLabel.style.display = 'block';
+            }
+        }
+
+        function showReport() {
+            const reportType = document.querySelector('input[name="reportType"]:checked').value;
+            const year = parseInt(document.getElementById('reportYearSelect').value);
+            const month = parseInt(document.getElementById('reportMonthSelect').value);
+
+            let reportData = {
+                totalDays: 0,
+                totalDuration: 0
+            };
+
+            if (reportType === 'month') {
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateKey = formatDateKey(year, month, day);
+                    if (workoutData[dateKey]) {
+                        reportData.totalDays++;
+                        reportData.totalDuration += (workoutData[dateKey].duration || 0);
+                    }
+                }
+                document.getElementById('reportTitle').textContent = `${year}.${month + 1}月报`;
+            } else {
+                for (let m = 0; m < 12; m++) {
+                    const daysInMonth = new Date(year, m + 1, 0).getDate();
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const dateKey = formatDateKey(year, m, day);
+                        if (workoutData[dateKey]) {
+                            reportData.totalDays++;
+                            reportData.totalDuration += (workoutData[dateKey].duration || 0);
+                        }
+                    }
+                }
+                document.getElementById('reportTitle').textContent = `${year}年报`;
+            }
+
+            const totalHours = Math.floor(reportData.totalDuration / 60);
+            const totalMinutes = reportData.totalDuration % 60;
+            let durationText = reportData.totalDuration + '分钟';
+            if (totalHours > 0) {
+                durationText = `${totalHours}小时${totalMinutes > 0 ? totalMinutes + '分钟' : ''}`;
+            }
+
+            const reportContent = document.getElementById('reportContent');
+            reportContent.innerHTML = `
+                <div class="report-summary">
+                    <h3>${reportType === 'month' ? '月报' : '年报'}统计</h3>
+                    <div class="report-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">锻炼天数</div>
+                            <div class="stat-value">${reportData.totalDays}天</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">运动时长</div>
+                            <div class="stat-value">${durationText}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            closeReportSelectModal();
+            document.getElementById('reportModal').classList.add('active');
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('active');
+        }
+
+        function saveReportToAlbum() {
+            alert('请在手机上截屏保存报表');
+        }
+    </script>
+</body>
+</html>
