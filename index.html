@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="健身计划">
+    <meta name="apple-mobile-web-app-title" content="Fitness Tracker">
     <meta name="theme-color" content="#4a9eff">
-    <title>💪健身计划</title>
+    <title>💪 Fitness Tracker</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💪</text></svg>">
     <style>
@@ -644,10 +644,6 @@
                             <span class="workout-name" data-original="背">背</span>
                         </label>
                         <label class="workout-item">
-                            <input type="checkbox" value="户外">
-                            <span class="workout-name" data-original="户外">户外</span>
-                        </label>
-                        <label class="workout-item">
                             <input type="checkbox" value="腹">
                             <span class="workout-name" data-original="腹">腹</span>
                         </label>
@@ -655,14 +651,25 @@
                             <input type="checkbox" value="手臂">
                             <span class="workout-name" data-original="手臂">手臂</span>
                         </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="户外">
+                            <span class="workout-name" data-original="户外">户外</span>
+                        </label>
                     </div>
                     <input type="text" class="outdoor-note" id="outdoorNote" placeholder="户外项目备注（如：跑步、骑行）">
 
-                    <p class="section-title">运动时长（小时:分钟）：</p>
+                    <p class="section-title">Duration (Hours:Minutes):</p>
                     <div class="duration-inputs">
                         <input type="number" class="duration-input" id="hoursInput" placeholder="0" min="0">
                         <span class="duration-separator">:</span>
-                        <input type="number" class="duration-input" id="minutesInput" placeholder="00" min="0" max="59">
+                        <select class="duration-input" id="minutesInput" style="width:70px;">
+                            <option value="0">00</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="30">30</option>
+                            <option value="40">40</option>
+                            <option value="50">50</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-actions">

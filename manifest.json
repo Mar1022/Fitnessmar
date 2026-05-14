@@ -1,7 +1,7 @@
 {
-  "name": "健身计划",
-  "short_name": "💪健身",
-  "description": "记录您的健身计划，追踪运动时长",
+  "name": "Fitness Tracker",
+  "short_name": "💪Fitness",
+  "description": "Track your fitness workouts and duration",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
