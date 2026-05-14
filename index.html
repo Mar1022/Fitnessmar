@@ -708,15 +708,15 @@
                     <p class="section-title">运动时长（小时:分钟）：</p>
                     <div class="duration-inputs">
                         <div class="number-stepper">
-                            <button type="button" class="stepper-btn" onclick="stepHours(1)">+</button>
-                            <input type="number" class="duration-input" id="hoursInput" placeholder="0" min="0" readonly>
                             <button type="button" class="stepper-btn" onclick="stepHours(-1)">-</button>
+                            <input type="number" class="duration-input" id="hoursInput" placeholder="0" min="0" readonly>
+                            <button type="button" class="stepper-btn" onclick="stepHours(1)">+</button>
                         </div>
                         <span class="duration-separator">:</span>
                         <div class="number-stepper">
-                            <button type="button" class="stepper-btn" onclick="stepMinutes(10)">+</button>
-                            <input type="number" class="duration-input" id="minutesInput" value="0" min="0" max="50" step="10" readonly>
                             <button type="button" class="stepper-btn" onclick="stepMinutes(-10)">-</button>
+                            <input type="number" class="duration-input" id="minutesInput" value="0" min="0" max="50" step="10" readonly>
+                            <button type="button" class="stepper-btn" onclick="stepMinutes(10)">+</button>
                         </div>
                     </div>
                 </div>
