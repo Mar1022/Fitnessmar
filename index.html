@@ -2,13 +2,13 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, safe-area-inset-top">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="健身计划">
     <meta name="theme-color" content="#4a9eff">
-    <link rel="manifest" href="manifest.json">
     <title>健身计划</title>
+    <link rel="manifest" href="manifest.json">
     <style>
         * {
             margin: 0;
@@ -16,21 +16,12 @@
             box-sizing: border-box;
         }
 
-        @supports (padding: max(0px)) {
-            body {
-                padding-top: max(20px, env(safe-area-inset-top));
-                padding-left: max(20px, env(safe-area-inset-left));
-                padding-right: max(20px, env(safe-area-inset-right));
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
-            }
-        }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #f0f0f0;
             min-height: 100vh;
-            color: #333;
             padding: 20px;
+            color: #333;
         }
 
         .container {
@@ -260,6 +251,41 @@
             background: white;
             border-radius: 16px;
             width: 100%;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+
+        /* 数据管理按钮样式 */
+        .data-manage-btn {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 99;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
             max-width: 400px;
             max-height: 80vh;
             overflow-y: auto;
@@ -614,6 +640,14 @@
                             <input type="checkbox" value="户外">
                             <span class="workout-name" data-original="户外">户外</span>
                         </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="腹">
+                            <span class="workout-name" data-original="腹">腹</span>
+                        </label>
+                        <label class="workout-item">
+                            <input type="checkbox" value="手臂">
+                            <span class="workout-name" data-original="手臂">手臂</span>
+                        </label>
                     </div>
                     <input type="text" class="outdoor-note" id="outdoorNote" placeholder="户外项目备注（如：跑步、骑行）">
 
@@ -677,50 +711,13 @@
     </div>
 
     <script>
-        // 注册 Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(registration => {
-                        console.log('Service Worker 注册成功:', registration.scope);
-
-                        // 监听更新
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // 有新版本可用
-                                    console.log('新版本 Service Worker 已安装，刷新页面以应用');
-                                    if (confirm('发现新版本，是否立即更新？')) {
-                                        window.location.reload();
-                                    }
-                                }
-                            });
-                        });
-                    })
-                    .catch(error => {
-                        console.error('Service Worker 注册失败:', error);
-                    });
-            });
-        }
-
-        // 监听 PWA 安装提示
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // 阻止默认的安装提示
-            e.preventDefault();
-            // 保存事件以在合适的时机触发
-            deferredPrompt = e;
-
-            // 可以显示一个自定义的安装按钮
-            console.log('可以安装 PWA 了');
-        });
-
+        // 数据存储
         let workoutData = {};
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let selectedDate = null;
 
+        // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             renderCalendar();
@@ -728,6 +725,7 @@
             setupWorkoutNameEditing();
         });
 
+        // 设置运动项目名称编辑功能
         function setupWorkoutNameEditing() {
             document.querySelectorAll('.workout-name').forEach(nameSpan => {
                 nameSpan.addEventListener('click', (e) => {
@@ -760,17 +758,21 @@
             });
         }
 
+        // 加载数据
         function loadData() {
             const storedWorkoutData = localStorage.getItem('workoutData');
+
             if (storedWorkoutData) {
                 workoutData = JSON.parse(storedWorkoutData);
             }
         }
 
+        // 保存数据
         function saveData() {
             localStorage.setItem('workoutData', JSON.stringify(workoutData));
         }
 
+        // 设置事件监听
         function setupEventListeners() {
             document.getElementById('prevYear').addEventListener('click', () => {
                 currentYear--;
@@ -801,14 +803,18 @@
             });
 
             document.getElementById('reportBtn').addEventListener('click', openReportSelectModal);
+
             document.getElementById('closeWorkoutModal').addEventListener('click', closeWorkoutModal);
             document.getElementById('btnSaveWorkout').addEventListener('click', saveWorkout);
             document.getElementById('btnDeleteWorkout').addEventListener('click', deleteWorkout);
+
             document.getElementById('closeReportSelect').addEventListener('click', closeReportSelectModal);
             document.getElementById('btnShowReport').addEventListener('click', showReport);
+
             document.querySelectorAll('input[name="reportType"]').forEach(radio => {
                 radio.addEventListener('change', toggleMonthSelect);
             });
+
             document.getElementById('closeReport').addEventListener('click', closeReportModal);
             document.getElementById('btnSaveReport').addEventListener('click', saveReportToAlbum);
 
@@ -821,8 +827,10 @@
             });
         }
 
+        // 渲染日历
         function renderCalendar() {
             const calendar = document.getElementById('calendar');
+
             document.getElementById('currentMonth').textContent = `${currentYear}.${currentMonth + 1}`;
             document.getElementById('calendarTitle').textContent = `${currentYear}.${currentMonth + 1}`;
 
@@ -840,6 +848,7 @@
             document.getElementById('totalWorkoutDays').textContent = `${completedDays}`;
 
             calendar.innerHTML = '';
+
             for (let i = 0; i < firstDay; i++) {
                 const emptyDay = document.createElement('div');
                 emptyDay.className = 'day empty';
@@ -850,9 +859,12 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'day';
+
                 const dateKey = formatDateKey(currentYear, currentMonth, day);
 
-                if (today.getFullYear() === currentYear && today.getMonth() === currentMonth && today.getDate() === day) {
+                if (today.getFullYear() === currentYear &&
+                    today.getMonth() === currentMonth &&
+                    today.getDate() === day) {
                     dayElement.classList.add('today');
                 }
 
@@ -866,6 +878,7 @@
 
                 if (workoutData[dateKey]) {
                     const data = workoutData[dateKey];
+
                     const workoutTypes = document.createElement('div');
                     workoutTypes.className = 'workout-types';
                     const typeNames = data.types || [];
@@ -889,17 +902,22 @@
                 }
 
                 dayElement.appendChild(workoutInfo);
+
                 dayElement.addEventListener('click', () => openWorkoutModal(currentYear, currentMonth, day));
+
                 calendar.appendChild(dayElement);
             }
         }
 
+        // 格式化日期key
         function formatDateKey(year, month, day) {
             return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         }
 
+        // 打开运动记录模态框
         function openWorkoutModal(year, month, day) {
             selectedDate = formatDateKey(year, month, day);
+
             document.getElementById('modalDate').textContent = `${year}年${month + 1}月${day}日`;
 
             document.querySelectorAll('.workout-item input').forEach(input => {
@@ -937,11 +955,13 @@
             document.getElementById('workoutModal').classList.add('active');
         }
 
+        // 关闭运动记录模态框
         function closeWorkoutModal() {
             document.getElementById('workoutModal').classList.remove('active');
             selectedDate = null;
         }
 
+        // 保存运动记录
         function saveWorkout() {
             const selectedTypes = [];
             document.querySelectorAll('.workout-item input:checked').forEach(input => {
@@ -973,6 +993,7 @@
             closeWorkoutModal();
         }
 
+        // 删除运动记录
         function deleteWorkout() {
             if (selectedDate && workoutData[selectedDate]) {
                 if (confirm('确定要删除这条记录吗？')) {
@@ -984,6 +1005,7 @@
             }
         }
 
+        // 打开报表选择模态框
         function openReportSelectModal() {
             const yearSelect = document.getElementById('reportYearSelect');
             const monthSelect = document.getElementById('reportMonthSelect');
@@ -1013,10 +1035,12 @@
             document.getElementById('reportSelectModal').classList.add('active');
         }
 
+        // 关闭报表选择模态框
         function closeReportSelectModal() {
             document.getElementById('reportSelectModal').classList.remove('active');
         }
 
+        // 切换月份选择显示
         function toggleMonthSelect() {
             const reportType = document.querySelector('input[name="reportType"]:checked').value;
             const monthSelect = document.getElementById('reportMonthSelect');
@@ -1033,6 +1057,7 @@
             }
         }
 
+        // 显示报表
         function showReport() {
             const reportType = document.querySelector('input[name="reportType"]:checked').value;
             const year = parseInt(document.getElementById('reportYearSelect').value);
@@ -1095,13 +1120,136 @@
             document.getElementById('reportModal').classList.add('active');
         }
 
+        // 关闭报表模态框
         function closeReportModal() {
             document.getElementById('reportModal').classList.remove('active');
         }
 
+        // 保存报表到相册
         function saveReportToAlbum() {
             alert('请在手机上截屏保存报表');
         }
+
+        // ========== 数据备份功能 ==========
+
+        // 打开数据管理模态框
+        function openDataManageModal() {
+            document.getElementById('dataManageModal').classList.add('active');
+        }
+
+        // 关闭数据管理模态框
+        function closeDataManageModal() {
+            document.getElementById('dataManageModal').classList.remove('active');
+        }
+
+        // 导出数据
+        function exportData() {
+            const data = localStorage.getItem('workoutData');
+            if (!data) {
+                alert('暂无数据可导出');
+                return;
+            }
+
+            const exportData = {
+                workoutData: JSON.parse(data),
+                exportTime: new Date().toISOString(),
+                version: '1.0'
+            };
+
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `健身数据备份_${new Date().toLocaleDateString().replace(/\//g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            alert('数据导出成功！');
+        }
+
+        // 复制数据到剪贴板
+        function copyDataToClipboard() {
+            const data = localStorage.getItem('workoutData');
+            if (!data) {
+                alert('暂无数据可复制');
+                return;
+            }
+            navigator.clipboard.writeText(data).then(() => {
+                alert('数据已复制到剪贴板！\n\n现在去浏览器版本粘贴导入吧。');
+            }).catch(() => {
+                alert('复制失败，请手动复制数据');
+            });
+        }
+
+        // 从剪贴板导入
+        async function importFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const data = JSON.parse(text);
+                if (data && typeof data === 'object') {
+                    if (confirm('导入将覆盖现有数据，是否继续？')) {
+                        localStorage.setItem('workoutData', JSON.stringify(data));
+                        location.reload();
+                        alert('数据导入成功！');
+                    }
+                } else {
+                    alert('剪贴板内容不是有效的数据格式');
+                }
+            } catch (err) {
+                alert('读取剪贴板失败，请确保已授权访问');
+            }
+        }
+
+        // 导入数据（文件方式）
+        function importData() {
+            const text = document.getElementById('importTextarea').value.trim();
+            if (!text) {
+                alert('请先粘贴备份数据');
+                return;
+            }
+            try {
+                const data = JSON.parse(text);
+                if (confirm('导入将覆盖现有数据，是否继续？')) {
+                    localStorage.setItem('workoutData', JSON.stringify(data));
+                    location.reload();
+                    alert('数据导入成功！');
+                }
+            } catch (err) {
+                alert('数据格式错误');
+            }
+        }
     </script>
+
+    <!-- 数据管理模态框 -->
+    <div id="dataManageModal" class="modal">
+        <div class="modal-content" style="padding:30px 20px;">
+            <h2 style="text-align:center;margin-bottom:20px;">数据备份</h2>
+            <div style="display:flex;flex-direction:column;gap:15px;">
+                <button class="action-btn" onclick="copyDataToClipboard()" style="background:#FF9800;">
+                    📋 一键复制数据
+                </button>
+                <button class="action-btn" onclick="importFromClipboard()" style="background:#4CAF50;">
+                    📥 从剪贴板导入
+                </button>
+                <hr style="border:none;border-top:1px solid #eee;margin:10px 0;">
+                <textarea id="importTextarea" placeholder="粘贴备份数据..." style="width:100%;height:80px;border:1px solid #ddd;border-radius:8px;padding:10px;font-size:14px;resize:none;"></textarea>
+                <button class="action-btn" onclick="importData()" style="background:#2196F3;">
+                    导入文本数据
+                </button>
+                <p style="font-size:12px;color:#666;text-align:center;">
+                    复制 → 去浏览器版本粘贴导入
+                </p>
+                <button class="action-btn" onclick="closeDataManageModal()" style="background:#999;">
+                    关闭
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 顶部数据管理按钮 -->
+    <button class="data-manage-btn" onclick="openDataManageModal()">
+        ⚙️
+    </button>
 </body>
 </html>
