@@ -21,12 +21,14 @@
             background: #f0f0f0;
             min-height: 100vh;
             padding: 20px;
+            padding-top: max(env(safe-area-inset-top), 20px);
             color: #333;
         }
 
         .container {
             max-width: 600px;
             margin: 0 auto;
+            padding-top: env(safe-area-inset-top);
         }
 
         header {
@@ -237,7 +239,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+            z-index: 9998;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -253,13 +255,15 @@
             width: 100%;
             max-width: 400px;
             margin: 50px auto;
+            margin-top: max(env(safe-area-inset-top), 50px);
             padding: 20px;
+            padding-top: max(calc(20px + env(safe-area-inset-top)), 50px);
         }
 
         /* 数据管理按钮样式 */
         .data-manage-btn {
             position: fixed;
-            top: 15px;
+            top: max(env(safe-area-inset-top), 50px);
             right: 15px;
             width: 44px;
             height: 44px;
@@ -269,8 +273,10 @@
             border: none;
             font-size: 20px;
             cursor: pointer;
-            z-index: 99;
+            z-index: 9999;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .action-btn {
