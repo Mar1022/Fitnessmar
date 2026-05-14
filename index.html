@@ -437,6 +437,28 @@
             color: #666;
         }
 
+        .number-stepper {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .stepper-btn {
+            width: 36px;
+            height: 36px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: white;
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a9eff;
+            cursor: pointer;
+        }
+
+        .stepper-btn:active {
+            background: #f0f0f0;
+        }
+
         .modal-actions {
             padding: 20px;
             display: flex;
@@ -658,18 +680,19 @@
                     </div>
                     <input type="text" class="outdoor-note" id="outdoorNote" placeholder="户外项目备注（如：跑步、骑行）">
 
-                    <p class="section-title">Duration (Hours:Minutes):</p>
+                    <p class="section-title">运动时长（小时:分钟）：</p>
                     <div class="duration-inputs">
-                        <input type="number" class="duration-input" id="hoursInput" placeholder="0" min="0">
+                        <div class="number-stepper">
+                            <button type="button" class="stepper-btn" onclick="stepHours(1)">+</button>
+                            <input type="number" class="duration-input" id="hoursInput" placeholder="0" min="0" readonly>
+                            <button type="button" class="stepper-btn" onclick="stepHours(-1)">-</button>
+                        </div>
                         <span class="duration-separator">:</span>
-                        <select class="duration-input" id="minutesInput" style="width:70px;">
-                            <option value="0">00</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="30">30</option>
-                            <option value="40">40</option>
-                            <option value="50">50</option>
-                        </select>
+                        <div class="number-stepper">
+                            <button type="button" class="stepper-btn" onclick="stepMinutes(10)">+</button>
+                            <input type="number" class="duration-input" id="minutesInput" value="0" min="0" max="50" step="10" readonly>
+                            <button type="button" class="stepper-btn" onclick="stepMinutes(-10)">-</button>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -938,8 +961,8 @@
                 input.checked = false;
             });
             document.getElementById('outdoorNote').value = '';
-            document.getElementById('hoursInput').value = '';
-            document.getElementById('minutesInput').value = '';
+            document.getElementById('hoursInput').value = '0';
+            document.getElementById('minutesInput').value = '0';
 
             if (workoutData[selectedDate]) {
                 const data = workoutData[selectedDate];
@@ -956,13 +979,9 @@
                 }
                 if (data.duration) {
                     const hours = Math.floor(data.duration / 60);
-                    const minutes = data.duration % 60;
-                    if (hours > 0) {
-                        document.getElementById('hoursInput').value = hours;
-                    }
-                    if (minutes > 0) {
-                        document.getElementById('minutesInput').value = minutes;
-                    }
+                    const minutes = Math.round((data.duration % 60) / 10) * 10;
+                    document.getElementById('hoursInput').value = hours;
+                    document.getElementById('minutesInput').value = minutes;
                 }
             }
 
@@ -973,6 +992,22 @@
         function closeWorkoutModal() {
             document.getElementById('workoutModal').classList.remove('active');
             selectedDate = null;
+        }
+
+        // 小时步进
+        function stepHours(delta) {
+            const input = document.getElementById('hoursInput');
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, val + delta);
+            input.value = val;
+        }
+
+        // 分钟步进（10分钟）
+        function stepMinutes(delta) {
+            const input = document.getElementById('minutesInput');
+            let val = parseInt(input.value) || 0;
+            val = Math.max(0, Math.min(50, val + delta));
+            input.value = val;
         }
 
         // 保存运动记录
